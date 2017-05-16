@@ -24,24 +24,17 @@ import java.util.Map;
 
 public class CallMethods {
 
-    private static TextToSpeech t1;
     private static Context context;
-    public static void call(Context cont, String StringToText, SharedPreferences SP){
-        t1=new TextToSpeech(cont.getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    t1.setLanguage(Locale.getDefault());
-                }
-            }
-        });
+    public static void call(Context cont, String StringToText,String textName, SharedPreferences SP){
+
         context=cont;
-        StringToText = StringToText.replace("llama a ", "");
+        StringToText = StringToText.replace(textName, "");
+        StringToText=StringToText.trim();
 
         if (isValidLong(StringToText)) {
             calling(cont,StringToText);
         }else {
-            StringToText=StringToText.trim();
+
             if (SP.contains(StringToText)){
                 String result =SP.getString(StringToText,"");
                 calling(cont,result);
@@ -64,7 +57,7 @@ public class CallMethods {
                     Iterator<Phone> it = arrayList.iterator();
                     while(it.hasNext()){
                         Phone p = it.next();
-                        t1.speak("Existe un "+p.getName(), TextToSpeech.QUEUE_FLUSH, null);
+                        Toast.makeText(cont, "Existe un "+p.getName(), Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -114,13 +107,12 @@ public class CallMethods {
                 String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 String phoneNumber="";
-            //    Log.i("Names", name);
+
                 if (Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                    // Query phone here. Covered next
+
                     Cursor phones = cont.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
                     while (phones.moveToNext()) {
                         phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                      //  Log.i("Number", phoneNumber);
 
 
                     }

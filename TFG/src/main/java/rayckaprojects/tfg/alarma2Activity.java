@@ -5,8 +5,6 @@ import android.provider.AlarmClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import static android.provider.AlarmClock.*;
-
 public class alarma2Activity extends AppCompatActivity {
 
     @Override

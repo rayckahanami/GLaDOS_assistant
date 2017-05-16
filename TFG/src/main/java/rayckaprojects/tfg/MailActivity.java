@@ -13,7 +13,6 @@ import java.util.List;
 
 public class MailActivity extends AppCompatActivity implements View.OnClickListener {
     Button btn;
-    EditText from;
     EditText to;
     EditText subject;
     EditText body;

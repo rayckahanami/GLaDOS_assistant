@@ -6,13 +6,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.Toast;
+
 
 import java.util.ArrayList;
-
-import static rayckaprojects.tfg.R.id.txtSpeechInput;
 
 public class HelperService extends Activity {
     private static final int REQUEST_CODE1 = 5463;

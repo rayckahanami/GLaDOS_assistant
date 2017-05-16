@@ -26,11 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".HelperActivity" />
-
         <service android:name=".ChatHeadService" />
-
         <receiver android:name=".BroadcastCustomReciever" />
-
         <activity android:name=".AlarmActivity" />
         <activity android:name=".HelperService" />
         <activity android:name=".ComandShowActivity" />

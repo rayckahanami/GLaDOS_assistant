@@ -6,18 +6,15 @@ package rayckaprojects.tfg;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class TextProcessor {
 
-    static TextToSpeech t1;
+
     private static Context cont;
     private static CallMethods callMe= new CallMethods();
 
@@ -29,7 +26,6 @@ public class TextProcessor {
 
         DatabaseHandler db = new DatabaseHandler(cont,"Comands");
         int countActual = db.getComandsCount();
-  //      Toast.makeText(cont,"Actualmente hay "+ String.valueOf(countActual) +"asignaciones de texto a comando", Toast.LENGTH_SHORT).show();
         List<Comand> comandlist = db.getAllComands();
         boolean flag = false;
         for (int i = 0; i < countActual; i++) {
@@ -38,9 +34,10 @@ public class TextProcessor {
                 if (SpeechToTexto.indexOf(help) == 0 ) {
                     flag = true;
                     String textValue = comandlist.get(i).getComandText();
+                    String textName = comandlist.get(i).getComandName();
                     //           Toast.makeText(cont, "La comanda existe y es ", Toast.LENGTH_SHORT).show();
                     //           Toast.makeText(cont, textValue, Toast.LENGTH_SHORT).show();
-                    menuReconocido(textValue, SpeechToTexto, SP, SPTEL);
+                    menuReconocido(textValue,textName, SpeechToTexto, SP);
                 }
             }
         }
@@ -50,24 +47,27 @@ public class TextProcessor {
         }
     }
 
-    public static void menuReconocido(String textValue, String StringToText, SharedPreferences SP,SharedPreferences SPTEL) {
+    public static void menuReconocido(String textValue,String textName, String StringToText, SharedPreferences SP) {
 
         DatabaseHandler db = new DatabaseHandler(cont,"Comands");
 
         if (textValue.equalsIgnoreCase("call")) {
-            callMe.call(cont, StringToText, SP);
+            callMe.call(cont, StringToText,textName, SP);
 
         }else if (textValue.equalsIgnoreCase("alarm")) {
-            //USAGE: ALARMA a las nueve 40
+            //USAGE: ALARMA 10:30
             Toast.makeText(cont, "Comando alarm", Toast.LENGTH_SHORT).show();
 
-            String helper =StringToText.replace("alarma a las ","");
+            String helper =StringToText.replace(textName,"");
+            helper=helper.trim();
+
+            if (helper.contains(" cero cero")){
+                helper=helper.replace(" cero cero",":00");
+            }
             String[] arrayhelp = helper.split(" ");
             String[] horacompleta = arrayhelp[0].split(":");
             helper = helper.replace(arrayhelp[0],"");
 
-            Toast.makeText(cont, helper, Toast.LENGTH_SHORT).show();
-            Toast.makeText(cont, arrayhelp[0], Toast.LENGTH_SHORT).show();
 
             Intent i = new Intent(cont,alarma2Activity.class);
             i.putExtra("type","alarm");
@@ -81,38 +81,29 @@ public class TextProcessor {
             //USAGE: temporizador 10 minutos
             int hora = 0;
             int minutos = 0;
-            String helper =StringToText.replace("temporizador ","");
-            String[] helperArray = helper.split(" ");
-            if(helperArray.length == 4){
-
-                if(helperArray[1]=="hora"){
+            String tempo =StringToText.replace(textName,"");
+            tempo=tempo.trim();
+            String[] helperArrays = tempo.split(" ");
+            Toast.makeText(cont, ""+helperArrays.length, Toast.LENGTH_SHORT).show();
+            if(helperArrays.length == 4) {
+                if(helperArrays[0].equals("una")){
                     hora=1;
-                }else {
-                    hora = Integer.parseInt(helperArray[0]);
-                }if(helperArray[3]=="minuto"){
+                }else hora=Integer.parseInt(helperArrays[0]);
+
+                if (helperArrays[2].equals("un")){
                     minutos=1;
-                }else {
-                    minutos = Integer.parseInt(helperArray[2]);
-                }
-
-            }else  if(helperArray.length == 2){
-                if(helperArray[1]=="hora" || helperArray[1]=="horas"){
-                    if(helperArray[1]=="hora"){
-                        hora=1;
-                    }else {
-                        hora=Integer.parseInt(helperArray[0]);
-                    }
-                    minutos=0;
-                }else if(helperArray[1]=="minuto" || helperArray[1]=="minutos"){
-                    if(helperArray[1]=="minuto"){
-                        minutos=1;
-                    }else {
-                        minutos=Integer.parseInt(helperArray[0]);
-                    }
-                    hora=0;
-                }
+                }else minutos=Integer.parseInt(helperArrays[2]);
             }
+            if(helperArrays.length == 2) {
+                if(helperArrays[0].equals("una")||helperArrays[0].equals("un")){
+                    if(helperArrays[1].equals("hora")) {
+                        hora = 1;
+                    }else minutos=1;
+                }else if (helperArrays[1].equals("horas")){
+                    hora=Integer.parseInt(helperArrays[0]);
+                }else minutos=Integer.parseInt(helperArrays[0]);
 
+            }
             Toast.makeText(cont, "Comando timer", Toast.LENGTH_SHORT).show();
             Intent i = new Intent(cont,alarma2Activity.class);
             i.putExtra("type","timer");
@@ -141,8 +132,8 @@ public class TextProcessor {
     //        Toast.makeText(cont, "borrados", Toast.LENGTH_SHORT).show();
 
         }else if(textValue.equalsIgnoreCase("addcomand")){
-            String helper =StringToText.replace("añadir comando","");
-            helper.replace(" ","");
+            String helper =StringToText.replace(textName,"");
+            helper=helper.trim();
             if (!helper.isEmpty()) {
                 String array[] = helper.split(" ");
                 String comand = array[array.length - 1];
@@ -160,13 +151,28 @@ public class TextProcessor {
             Intent i = new Intent(cont,CalendarViewActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             cont.startActivity(i);
-        } else if (textValue.equalsIgnoreCase("mail")){
+
+        } else if (textValue.equalsIgnoreCase("mail")) {
             Toast.makeText(cont, "Comando mail", Toast.LENGTH_SHORT).show();
-            Intent i = new Intent(cont,MailActivity.class);
+            Intent i = new Intent(cont, MailActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             cont.startActivity(i);
+
+        } else if (textValue.equalsIgnoreCase("addcontact")){
+            String helper =StringToText.replace(textName,"");
+            helper=helper.trim();
+            String[]arrayhelper =helper.split(" ");
+            String telephone=arrayhelper[arrayhelper.length-1];
+            String name= helper.replace(telephone,"");
+            name.trim();
+            SharedPreferences SPTEL = cont.getSharedPreferences("sharedPrefTel",cont.MODE_PRIVATE);
+            SharedPreferences.Editor editor = SPTEL.edit();
+            editor.putString(name, telephone);
+            editor.commit();
+
         }else {
             Toast.makeText(cont, "no existe comando", Toast.LENGTH_SHORT).show();
+            String helper =StringToText.replace("añadir comando","");
         }
 
     }
